@@ -1,0 +1,24 @@
+# Repo-wide ignores. Unity-specific patterns live in `unity/VRtasia/.gitignore`.
+
+## OS / IDE
+.idea/
+.vscode/
+.vs/
+.DS_Store
+Thumbs.db
+
+## Build artefacts (extra safety net; Unity's own .gitignore is authoritative)
+**/[Ll]ibrary/
+**/[Tt]emp/
+**/[Ll]ogs/
+**/[Bb]uild/
+**/[Bb]uilds/
+**/[Uu]ser[Ss]ettings/
+**/[Mm]emoryCaptures/
+*.csproj
+*.sln
+*.slnx
+
+## Godot leftovers (kept harmless, no Godot project in repo)
+.godot/
+.import/

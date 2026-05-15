@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Open Docs" type="PythonConfigurationType" factoryName="Python">
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="SCRIPT_NAME" value="-m http.server" />
+    <option name="PARAMETERS" value="8080 --directory ." />
+    <option name="MODULE_MODE" value="true" />
+    <option name="EMULATE_TERMINAL" value="true" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
+    <method v="2" />
+  </configuration>
+</component>
