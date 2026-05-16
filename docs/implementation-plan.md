@@ -9,8 +9,8 @@
 |---|---|---|
 | 0 — Repo baseline | Docs, decisions, .gitignore, run configs | ✅ Done |
 | 1 — Unity project bootstrap | Empty URP project committed to `unity/VRtasia/` (Unity 6000.4.7f1) | ✅ Done |
-| 2 — XR setup | OpenXR + XRI + Meta XR packages, settings, sample import | ⏳ Agent step (see §XR Setup Checklist) |
-| 3 — Hello-World scene | Grab cube + teleport works in-headset | ⏳ Blocked by phase 2 |
+| 2 — XR setup | XR packages in manifest, `XRAutoSetup.cs` auto-configures on first open | ✅ Done (3 UI clicks remain — see INSTALLATION.md §5) |
+| 3 — Hello-World scene | `HelloVR.unity` auto-created by setup script; grab cube + teleport | ✅ Done (verify in-headset) |
 | 4 — Shooting spike | Raycast pistol grabbed from holster | 📋 Backlog |
 | 5 — Static zombie target | Hittable dummy with damage states | 📋 Backlog |
 | 6 — Zombie NPC | NavMesh-driven walker that damages player | 📋 Backlog |
@@ -59,29 +59,26 @@
 - **Status**: Open. Recommendation: plain Git until first 3D model lands, then add LFS
 - **Decision**: `TBD`
 
-## XR Setup Checklist (agent runs after phase 1)
+## XR Setup — what's automated vs manual
 
-When the Unity project exists at `unity/VRtasia/`, the agent must:
+### Automated (runs on first Editor open via `XRAutoSetup.cs`)
+- XR packages in `manifest.json`: `com.unity.xr.management 4.5.0`, `com.unity.xr.openxr 1.13.1`, `com.unity.xr.interaction.toolkit 3.0.7`
+- Import XRI *Starter Assets* sample (needed for pre-configured controller prefabs)
+- Create `Assets/Scenes/HelloVR.unity`: full XR rig from starter prefab, floor with `TeleportationArea`, table, grabbable cube with `XRGrabInteractable` + `HelloVRLogger`
+- Register HelloVR as build scene 0
 
-1. **Edit `Packages/manifest.json`** — add dependencies:
-   ```json
-   "com.unity.xr.openxr": "1.13.0",
-   "com.unity.xr.interaction.toolkit": "3.0.7",
-   "com.unity.xr.management": "4.5.0"
-   ```
-   (Pin to versions present in the chosen Unity 6 LTS — agent looks up actual latest at execution time.)
-2. **Meta XR SDK Core** — install via Unity Asset Store package or scoped registry; record exact source in this file.
-3. **Edit `ProjectSettings/XRSettings.asset` + `XRGeneralSettings.asset`** — enable OpenXR loader for *Standalone (PC)* and *Android*.
-4. **Edit `ProjectSettings/OpenXRSettings.asset`** — enable interaction profile *Meta Quest Touch Plus* (and *Touch Pro* for Quest Pro), set Render Mode = *Single Pass Instanced*.
-5. **Import sample**: XRI → *Starter Assets* and *XR Device Simulator*.
-6. **Create `Assets/Scenes/HelloVR.unity`** with: XR Origin (XR Rig) prefab from Starter Assets, ground plane (Teleportation Area), table, grabbable cube (`XRGrabInteractable` + `Rigidbody`), directional light.
-7. **Create `Assets/Scripts/HelloVRLogger.cs`** — logs `Select Entered` / `Select Exited` from the cube's interactable.
-8. **Set Tracking Origin Mode = Floor** on XR Origin.
-9. **Verify** by entering Play mode (developer with headset).
+### Manual (once per developer machine, < 1 min)
+See [INSTALLATION.md §5](../INSTALLATION.md) for exact UI steps:
+1. Project Settings → XR Plug-in Management → enable **OpenXR** (PC + Android)
+2. Add interaction profiles: *Oculus Touch Controller Profile*, *Meta Quest Touch Pro Controller Profile*
+3. Android → Render Mode: **Single Pass Instanced**
 
 ## Done
 
 - [x] Baseline docs created (`Architecture.md`, `INSTALLATION.md`, `ideas.md`, this file)
-- [x] Engine direction fixed: Unity 6 LTS + C# + OpenXR + XRI + Meta Quest
-- [x] `.gitignore` covers Unity outputs
+- [x] Engine direction fixed: Unity 6000.4.7f1 + C# + URP + OpenXR + XRI + Meta Quest
+- [x] `.gitignore` and `.gitattributes` cover Unity outputs
+- [x] XR packages added to `manifest.json`
+- [x] `Assets/Scripts/HelloVRLogger.cs` created
+- [x] `Assets/Scripts/Editor/XRAutoSetup.cs` created (auto-imports sample + creates scene)
 

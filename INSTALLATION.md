@@ -57,17 +57,30 @@ pwsh ./scripts/bootstrap-unity.ps1
 
 The script invokes Unity headlessly (`-batchmode -createProject`) at the pinned version. It assumes Unity 6000.4.7f1 is installed via Unity Hub at the default path; override with `$env:UNITY_EDITOR_PATH` if needed. See [scripts/README.md](scripts/README.md).
 
-## 5. Configure XR (agent-driven)
+## 5. XR Auto-Setup (runs automatically on first Editor open)
 
-After step 4, ask the coding agent to perform the **XR setup pass**. It will:
-- Add `com.unity.xr.openxr`, `com.unity.xr.interaction.toolkit`, `com.meta.xr.sdk.core` to `Packages/manifest.json`
-- Enable XR Plug-in Management → OpenXR for **PC** and **Android**
-- Enable Meta Quest interaction profiles
-- Set Stereo Rendering Mode to **Single Pass Instanced**
-- Import the XRI Starter Assets sample
-- Create `Assets/Scenes/HelloVR.unity` with a working XR rig + grabbable cube
+The XR packages are already in `Packages/manifest.json` and an Editor bootstrap script is committed. When you open the project for the first time:
 
-Manual fallback steps live in [docs/implementation-plan.md](docs/implementation-plan.md) under *XR Setup Checklist*.
+1. Unity downloads the three XR packages (`com.unity.xr.management`, `com.unity.xr.openxr`, `com.unity.xr.interaction.toolkit`). This can take 2–5 minutes on first open.
+2. After compilation, the script `Assets/Scripts/Editor/XRAutoSetup.cs` runs automatically.
+3. It imports the **XRI Starter Assets** sample (triggers one more recompile — normal).
+4. On the second recompile it creates `Assets/Scenes/HelloVR.unity` and opens it.
+5. Check the Console for a message starting with `[VRtasia Setup] ✔ HelloVR scene saved`.
+
+> **If nothing happens**: use menu **VRtasia → Run XR Setup** to trigger it manually.
+> **To redo from scratch**: **VRtasia → Reset XR Setup Flags**, then **VRtasia → Run XR Setup**.
+
+### Remaining manual XR Management steps (< 1 minute, three UI clicks)
+
+These cannot be reliably automated and must be done once per machine:
+
+1. **Edit → Project Settings → XR Plug-in Management**
+   - **PC tab**: check ✅ **OpenXR**
+   - **Android tab**: check ✅ **OpenXR**
+2. **Both tabs** → click the **OpenXR** row → **(+) Add Interaction Profile**:
+   - `Oculus Touch Controller Profile` (Quest 2)
+   - `Meta Quest Touch Pro Controller Profile` (Quest 3 / Pro)
+3. **Android → OpenXR → Rendering** → set **Render Mode: Single Pass Instanced**
 
 ## 6. Run the Hello-World
 
