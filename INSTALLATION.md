@@ -100,3 +100,31 @@ These cannot be reliably automated and must be done once per machine:
 | Controllers invisible | Sample assets not imported | Window → Package Manager → XR Interaction Toolkit → Samples → import *Starter Assets* |
 | Input not working | Mixed action-based + device-based | Use only the action-based rig from the Starter Assets |
 
+## 8. Testing without a VR headset (XR Device Simulator)
+
+The **XR Device Simulator** is automatically added to the HelloVR scene by the setup script. It lets you simulate head movement and both controllers entirely with mouse + keyboard in the Unity Editor — no headset required.
+
+**To activate**: open `Assets/Scenes/HelloVR.unity` and press **▶ Play**. The simulator is active by default in the Editor. An on-screen overlay shows the current bindings.
+
+### Default keyboard/mouse controls
+
+| Input | Action |
+|---|---|
+| **Tab** | Cycle simulated device: HMD → Left Controller → Right Controller |
+| **Mouse move** | Rotate the currently selected device (look around / aim controller) |
+| **W A S D** | Translate selected device (move head or controller in space) |
+| **Q / E** | Translate down / up |
+| **Left Shift** (hold) | Move faster |
+| **G** (hold) | Grip button (grab interactable) |
+| **T** (hold) | Trigger button (activate / teleport) |
+| **Space** | Toggle cursor lock (free mouse vs simulator mouse) |
+
+> **Tip**: select **HMD** with Tab and use W/A/S/D to walk around. Then switch to Right Controller with Tab again, aim at the floor with mouse, and hold **T** to teleport.  
+> Select Right Controller, aim at the Grab Cube, hold **G** to pick it up.
+
+### The simulator is Editor-only
+
+The `SimulatorEditorOnly` component disables the simulator GameObject in standalone builds automatically — no manual step required.
+
+If the simulator is missing from an existing scene (e.g. you ran setup before this feature was added), run: **VRtasia → Add Device Simulator to Scene**.
+

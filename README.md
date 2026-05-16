@@ -17,7 +17,8 @@ VR zombie-shooter prototype — single-player, Meta Quest, built in Unity.
 2. Clone repo → **Unity Hub → Add project from disk** → select `unity/VRtasia/`.
 3. On first open Unity downloads XR packages and runs the auto-setup script — see [INSTALLATION.md §5](INSTALLATION.md).
 4. Do the **3 manual XR Management clicks** described in INSTALLATION.md §5.
-5. Connect Quest via **Quest Link**, open `Assets/Scenes/HelloVR.unity`, press **▶ Play**.
+5. Connect Quest via **Quest Link**, open `Assets/Scenes/HelloVR.unity`, press **▶ Play**.  
+   **No headset?** Press Play anyway — the XR Device Simulator lets you test with mouse + keyboard. See [INSTALLATION.md §8](INSTALLATION.md).
 
 ### PyCharm helpers
 | ▶ Configuration | Action |
