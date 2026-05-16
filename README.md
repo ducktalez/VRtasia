@@ -55,6 +55,7 @@ VRtasia/
 |---|---|
 | [Architecture.md](Architecture.md) | Engine + XR decisions, comfort/perf targets, pitfalls |
 | [docs/implementation-plan.md](docs/implementation-plan.md) | Roadmap, backlog, design discussions |
+| [docs/meeting-01-agenda.md](docs/meeting-01-agenda.md) | Kickoff-Treffen — Agenda, Entscheidungspunkte, Demo-Ablauf |
 | [INSTALLATION.md](INSTALLATION.md) | Step-by-step environment setup |
 | [ideas.md](ideas.md) | Raw brainstorm backlog |
 | [.github/copilot-instructions.md](.github/copilot-instructions.md) | AI coding guidance |
