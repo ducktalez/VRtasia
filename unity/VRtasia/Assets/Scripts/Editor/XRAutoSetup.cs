@@ -18,11 +18,12 @@ namespace VRtasia.Editor
     /// but each step is guarded so it only executes once.
     ///
     /// Flow (two domain-reload cycles):
-    ///   Cycle 1 — Imports XRI "Starter Assets" sample  → triggers domain reload
-    ///   Cycle 2 — Creates Assets/Scenes/HelloVR.unity
+    ///   Cycle 1 — Imports XRI "Starter Assets" + "XR Device Simulator" samples → triggers domain reload
+    ///   Cycle 2 — Creates Assets/Scenes/HelloVR.unity (includes XR Device Simulator for no-headset testing)
     ///
     /// Re-run manually: menu  VRtasia ▶ Run XR Setup
     /// Reset flags:     menu  VRtasia ▶ Reset XR Setup Flags
+    /// Add simulator:   menu  VRtasia ▶ Add Device Simulator to Scene
     /// </summary>
     [InitializeOnLoad]
     static class XRAutoSetup
@@ -31,8 +32,10 @@ namespace VRtasia.Editor
         const string k_SamplesKey  = "VRtasia.XRI.SamplesImported";
         const string k_SceneKey    = "VRtasia.HelloVR.SceneCreated";
         const string k_PkgId       = "com.unity.xr.interaction.toolkit";
-        const string k_SampleName  = "Starter Assets";
         const string k_ScenePath   = "Assets/Scenes/HelloVR.unity";
+
+        // Both samples are imported in a single pass (before domain reload fires)
+        static readonly string[] k_RequiredSamples = { "Starter Assets", "XR Device Simulator" };
 
         static XRAutoSetup() => EditorApplication.delayCall += Run;
 
@@ -47,6 +50,25 @@ namespace VRtasia.Editor
             EditorPrefs.DeleteKey(k_SamplesKey);
             EditorPrefs.DeleteKey(k_SceneKey);
             Debug.Log("[VRtasia Setup] Flags reset. Run 'VRtasia > Run XR Setup' to redo.");
+        }
+
+        [MenuItem("VRtasia/Add Device Simulator to Scene")]
+        static void AddSimulatorMenu()
+        {
+            var go = TryInstantiateDeviceSimulatorPrefab();
+            if (go != null)
+            {
+                go.AddComponent<SimulatorEditorOnly>();
+                var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+                EditorSceneManager.SaveScene(scene);
+                Debug.Log("[VRtasia Setup] ✔ Device Simulator added and scene saved.");
+            }
+            else
+            {
+                Debug.LogWarning("[VRtasia Setup] XR Device Simulator prefab not found.\n" +
+                                 "Import it via Window > Package Manager > XR Interaction Toolkit > " +
+                                 "Samples > XR Device Simulator > Import, then retry.");
+            }
         }
 
         // ── Main entry point ─────────────────────────────────────────────────
@@ -79,44 +101,43 @@ namespace VRtasia.Editor
                 var pkgInfo = PackageInfo.FindForPackageName(k_PkgId);
                 if (pkgInfo == null)
                 {
-                    // Package not downloaded yet — will retry on next domain reload
                     Debug.Log("[VRtasia Setup] XRI package not yet available; retrying after package install.");
                     return;
                 }
 
-                var samples = Sample.FindByPackage(pkgInfo.name, pkgInfo.version);
-                var starter = samples.FirstOrDefault(s => s.displayName == k_SampleName);
+                var available = Sample.FindByPackage(pkgInfo.name, pkgInfo.version).ToList();
+                bool anyImported = false;
 
-                if (string.IsNullOrEmpty(starter.displayName))
+                foreach (var sampleName in k_RequiredSamples)
                 {
-                    Debug.LogWarning($"[VRtasia Setup] Sample '{k_SampleName}' not found in {k_PkgId}@{pkgInfo.version}.");
-                    // Proceed to scene creation anyway (will use manual fallback rig)
-                    EditorPrefs.SetBool(k_SamplesKey, true);
-                    CreateHelloVRScene();
-                    return;
+                    var sample = available.FirstOrDefault(s => s.displayName == sampleName);
+                    if (string.IsNullOrEmpty(sample.displayName))
+                    {
+                        Debug.LogWarning($"[VRtasia Setup] Sample '{sampleName}' not found in {k_PkgId}@{pkgInfo.version} — skipping.");
+                        continue;
+                    }
+                    if (sample.isImported) continue;
+
+                    Debug.Log($"[VRtasia Setup] Importing '{sampleName}'…");
+                    sample.Import(Sample.ImportOptions.HideImportWindow);
+                    anyImported = true;
                 }
 
-                if (starter.isImported)
-                {
-                    Debug.Log("[VRtasia Setup] XRI Starter Assets already imported.");
-                    EditorPrefs.SetBool(k_SamplesKey, true);
-                    CreateHelloVRScene();
-                    return;
-                }
-
-                // Set flag BEFORE import — import triggers a domain reload and
-                // code after Import() might not execute.
+                // Set flag before the domain reload triggered by Import() fires.
                 EditorPrefs.SetBool(k_SamplesKey, true);
-                Debug.Log("[VRtasia Setup] Importing XRI Starter Assets… Unity will recompile.");
-                starter.Import(Sample.ImportOptions.HideImportWindow);
-                // Domain reload → Run() fires again → Step 2 executes
+
+                if (!anyImported)
+                {
+                    // All samples already present — go straight to scene creation.
+                    Debug.Log("[VRtasia Setup] XRI samples already imported.");
+                    CreateHelloVRScene();
+                }
+                // else: domain reload → Run() fires again → k_SamplesKey == true → CreateHelloVRScene()
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[VRtasia Setup] Sample import failed: {e.Message}\n" +
-                                 "You can import it manually: Window > Package Manager > " +
-                                 "XR Interaction Toolkit > Samples > Starter Assets > Import.");
-                // Don't block scene creation
+                Debug.LogWarning($"[VRtasia Setup] Sample import error: {e.Message}\n" +
+                                 "Import manually: Window > Package Manager > XR Interaction Toolkit > Samples.");
                 EditorPrefs.SetBool(k_SamplesKey, true);
             }
         }
@@ -171,6 +192,14 @@ namespace VRtasia.Editor
                 cubeGO.AddComponent<XRGrabInteractable>();
                 cubeGO.AddComponent<HelloVRLogger>();
 
+                // XR Device Simulator (Editor-only — disabled in builds) ────────
+                var simGO = TryInstantiateDeviceSimulatorPrefab();
+                if (simGO != null)
+                    simGO.AddComponent<SimulatorEditorOnly>();
+                else
+                    Debug.LogWarning("[VRtasia Setup] XR Device Simulator prefab not found. " +
+                                     "Add it later via VRtasia > Add Device Simulator to Scene.");
+
                 // Save ────────────────────────────────────────────────────────
                 EditorSceneManager.SaveScene(scene, k_ScenePath);
                 EditorPrefs.SetBool(k_SceneKey, true);
@@ -201,7 +230,6 @@ namespace VRtasia.Editor
         /// </summary>
         static GameObject TryInstantiateXROriginPrefab()
         {
-            // Search in Samples folder first to avoid false-positive matches
             string[] searchFolders = { "Assets/Samples" };
             var guids = AssetDatabase.FindAssets("Complete XR Origin Set Up t:Prefab", searchFolders);
             if (guids.Length == 0)
@@ -216,6 +244,24 @@ namespace VRtasia.Editor
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
             go.transform.position = Vector3.zero;
             Debug.Log($"[VRtasia Setup] XR Origin instantiated from prefab: {path}");
+            return go;
+        }
+
+        /// <summary>
+        /// Finds and instantiates the XR Device Simulator prefab from the XRI sample.
+        /// Returns null if the sample has not been imported yet.
+        /// </summary>
+        static GameObject TryInstantiateDeviceSimulatorPrefab()
+        {
+            var guids = AssetDatabase.FindAssets("XR Device Simulator t:Prefab", new[] { "Assets/Samples" });
+            if (guids.Length == 0) return null;
+
+            var path   = AssetDatabase.GUIDToAssetPath(guids[0]);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null) return null;
+
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            Debug.Log($"[VRtasia Setup] XR Device Simulator instantiated from: {path}");
             return go;
         }
 
