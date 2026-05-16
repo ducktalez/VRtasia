@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.UI;
+using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using Unity.XR.CoreUtils;
