@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Open Unity Editor" type="PythonConfigurationType" factoryName="Python">
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/open_unity.py" />
+    <option name="EMULATE_TERMINAL" value="true" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
+    <method v="2" />
+  </configuration>
+</component>
+
